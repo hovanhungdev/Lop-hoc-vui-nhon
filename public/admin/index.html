@@ -30,7 +30,7 @@ textarea{min-height:260px;font-family:ui-monospace,Menlo,Consolas,monospace;font
 .item:first-child{border-top:0}.item img,.ph{width:84px;height:56px;border-radius:10px;object-fit:cover;flex:none;display:flex;align-items:center;justify-content:center;font-size:28px}
 .item .t{flex:1;min-width:0}.item .t b{display:block}.item .t small{color:var(--muted)}
 .tag{font-size:12px;font-weight:800;background:var(--g2);border-radius:999px;padding:2px 10px;margin-left:6px}
-.pv{max-width:260px;max-height:120px;border-radius:12px;display:block;margin-top:8px;border:1px solid var(--line)}
+.pv{max-width:260px;max-height:140px;border-radius:12px;display:block;margin-top:8px;border:1px solid var(--line)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}@media(max-width:700px){.two{grid-template-columns:1fr}}
 iframe{width:100%;height:420px;border:2px solid var(--line);border-radius:14px;background:#fff;margin-top:10px}
 .hint{color:var(--muted);font-size:13px;margin:4px 0 0}
@@ -81,7 +81,7 @@ iframe{width:100%;height:420px;border:2px solid var(--line);border-radius:14px;b
       <div class="two">
         <div><label>Ảnh bìa thẻ trò chơi</label><input type="file" id="gThumbF" accept="image/*"><img class="pv" id="gThumbPv" alt="" hidden>
           <button class="btn alt" id="gThumbX" type="button" hidden style="margin-top:6px">Bỏ ảnh</button>
-          <p class="hint">Không có ảnh: dùng biểu tượng và hai màu bên dưới.</p></div>
+          <p class="hint">Ảnh tự được cắt giữa về khung cố định 360×115 (ngang, khoảng 3:1), nên mọi thẻ trò chơi luôn bằng nhau. Không có ảnh: dùng biểu tượng và hai màu bên dưới.</p></div>
         <div><label>Hình nền khi chơi</label><input type="file" id="gBgF" accept="image/*"><img class="pv" id="gBgPv" alt="" hidden>
           <div class="row" style="margin-top:6px"><input type="color" id="gBgC" value="#e8f6ff" aria-label="Màu nền"><button class="btn alt" id="gBgX" type="button">Bỏ nền</button></div></div>
       </div>
@@ -142,13 +142,14 @@ function show(on){$('#loginView').hidden=on;$('#appView').hidden=!on}
 async function busy(btn,fn){btn.disabled=true;try{await fn()}catch(e){toast(e.message,1)}finally{btn.disabled=false}}
 
 // --- Ảnh: thu nhỏ trước khi tải lên ---
-function shrink(file,max){return new Promise((ok,no)=>{const im=new Image(),u=URL.createObjectURL(file);
-  im.onload=()=>{const k=Math.min(1,max/im.width),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
-    c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL('image/jpeg',.85))};
+function shrink(file,max,ratio){return new Promise((ok,no)=>{const im=new Image(),u=URL.createObjectURL(file);
+  im.onload=()=>{const c=document.createElement('canvas'),x=c.getContext('2d');
+    if(ratio){c.width=max;c.height=Math.round(max/ratio);const s=Math.max(c.width/im.width,c.height/im.height),w=im.width*s,h=im.height*s;x.drawImage(im,(c.width-w)/2,(c.height-h)/2,w,h)}
+    else{const k=Math.min(1,max/im.width);c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);x.drawImage(im,0,0,c.width,c.height)}URL.revokeObjectURL(u);ok(c.toDataURL('image/jpeg',.85))};
   im.onerror=()=>no(new Error('Không đọc được ảnh.'));im.src=u})}
-async function upload(file,max){const d=await shrink(file,max);return (await api('img','POST',{data:d})).url}
-function bindImg(input,max,onDone){input.onchange=async()=>{const f=input.files[0];if(!f)return;
-  try{toast('Đang tải ảnh...');onDone(await upload(f,max));toast('Đã tải ảnh')}catch(e){toast(e.message,1)}input.value=''}}
+async function upload(file,max,ratio){const d=await shrink(file,max,ratio);return (await api('img','POST',{data:d})).url}
+function bindImg(input,max,onDone,ratio){input.onchange=async()=>{const f=input.files[0];if(!f)return;
+  try{toast('Đang tải ảnh...');onDone(await upload(f,max,ratio));toast('Đã tải ảnh')}catch(e){toast(e.message,1)}input.value=''}}
 function pv(id,url){const i=$(id);i.hidden=!url;if(url)i.src=url}
 
 // --- Đăng nhập ---
@@ -184,7 +185,7 @@ function edit(i){
 }
 function setThumb(u){draft.thumb=u;pv('#gThumbPv',u);$('#gThumbX').hidden=!u}
 function setBg(u){draft.bg=u;const img=u.startsWith('/');pv('#gBgPv',img?u:'');if(!img&&u)$('#gBgC').value=u}
-bindImg($('#gThumbF'),640,setThumb);bindImg($('#gBgF'),1600,setBg);
+bindImg($('#gThumbF'),720,setThumb,360/115);bindImg($('#gBgF'),1600,setBg);
 $('#gThumbX').onclick=()=>setThumb('');$('#gBgX').onclick=()=>setBg('');$('#gBgC').oninput=e=>setBg(e.target.value);
 $('#cancelBtn').onclick=()=>{$('#editCard').hidden=true;$('#listCard').hidden=false};
 function collect(){return {id:$('#gId').value.trim().toLowerCase(),title:$('#gTitle').value.trim(),desc:$('#gDesc').value.trim(),cat:$('#gCat').value,icon:$('#gIcon').value.trim(),
