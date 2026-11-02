@@ -66,14 +66,22 @@ main{max-width:1672px;padding:0}
 .chip.on{background:var(--green);color:#fff}
 .grid{grid-template-columns:repeat(5,1fr);gap:18px}
 .card{border-radius:16px;border:0;box-shadow:0 4px 14px rgba(0,50,20,.18)}
-.thumb{height:auto;display:block;font-size:62px}
-.thumb img{width:100%;display:block}
-.thumb.ph{height:100px;display:flex;align-items:center;justify-content:center}
+.thumb{aspect-ratio:360/115;height:auto;display:block;overflow:hidden;font-size:62px}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb.ph{height:auto;aspect-ratio:360/115;display:flex;align-items:center;justify-content:center}
 .card h3{margin:8px 8px 2px;font-size:20px;font-weight:900}
 .card p{color:var(--text);font-size:14px;margin:0 10px 8px}
 .play{background:var(--green);padding:6px 26px;margin-bottom:12px}
 @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}.sec{padding:16px}.logo img{height:46px}nav{margin:0}}
+
+#play .panel{max-width:1100px}
+.pbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#pbody:fullscreen,#pbody.pfs{background:var(--bg);overflow:auto;display:flex;flex-direction:column;justify-content:center;padding:12px}
+#pbody.pfs{position:fixed;inset:0;z-index:40;padding-top:max(12px,env(safe-area-inset-top))}
+#pbody:fullscreen iframe{height:calc(100vh - 24px)!important}
+#pbody.pfs iframe{height:calc(100dvh - 24px)!important}
+#fsExit{position:fixed;top:max(10px,env(safe-area-inset-top));right:10px;z-index:60;opacity:.92}
 </style>
 </head>
 <body>
@@ -109,7 +117,7 @@ main{max-width:1672px;padding:0}
 </div></div>
 
 <div id="play" class="hide"><div class="panel">
-  <p><button class="btn alt" id="back">← Quay lại</button></p>
+  <p class="pbar"><button class="btn alt" id="back">← Quay lại</button><button class="btn" id="pFs" title="Phóng to trò chơi">⛶ Toàn màn hình</button></p>
   <h2 id="ptitle"></h2>
   <div id="pbody" class="stage"></div>
 </div></div>
@@ -123,6 +131,7 @@ main{max-width:1672px;padding:0}
 </div></div>
 
 <footer style="text-align:center;padding:16px;font-size:13px"><a href="/admin/" style="color:var(--muted)">Quản trị</a></footer>
+<button class="btn hide" id="fsExit">✕ Thoát toàn màn hình</button>
 <div class="toast hide" id="toast"></div>
 
 <script>
@@ -217,6 +226,7 @@ $('#saveNames').onclick = () => { students = $('#names').value.split('\n').map(s
 let cleanup = null;
 function route(){
   const h = (location.hash||'#home').slice(1);
+  exitFs();
   if(cleanup){ try{cleanup();}catch(e){} cleanup=null; }
   ['home','list','guide','play'].forEach(v=>$('#'+v).classList.add('hide'));
   let nav = h;
@@ -240,6 +250,16 @@ window.addEventListener('hashchange', route);
 $('#fsBtn').onclick = () => { try{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }catch(e){} };
 $('#themeBtn').onclick = () => { const r=document.documentElement; r.dataset.theme = (r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches))?'light':'dark'; };
 
+
+// ----- Toàn màn hình cho trò chơi -----
+const pb=()=>$('#pbody');
+function exitFs(){ const b=pb(); b.classList.remove('pfs'); $('#fsExit').classList.add('hide');
+  if(document.fullscreenElement) try{document.exitFullscreen();}catch(e){} }
+async function enterFs(){ const b=pb();
+  try{ if(b.requestFullscreen){ await b.requestFullscreen(); return; } }catch(e){}
+  b.classList.add('pfs'); $('#fsExit').classList.remove('hide'); }
+$('#pFs').onclick=()=>{ (document.fullscreenElement||pb().classList.contains('pfs')) ? exitFs() : enterFs(); };
+$('#fsExit').onclick=exitFs;
 renderChips(); renderGrid(); route();
 
 // ----- Dữ liệu từ máy chủ (admin tùy chỉnh) -----
