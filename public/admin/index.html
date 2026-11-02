@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Quản trị · Lớp Học Vui Nhộn</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e9f3ef;--card:#fff;--text:#1c3a2c;--muted:#4b6358;--green:#1f8a1f;--g2:#e3f4e3;--line:#cfe3d6;--red:#c0392b;--sh:0 4px 14px rgba(0,60,30,.14);color-scheme:light;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+@media(prefers-color-scheme:dark){:root{--bg:#13211b;--card:#1d2f27;--text:#eaf5ee;--muted:#a7c0b3;--g2:#25402f;--line:#2f4a3b;--red:#ff8a7a;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;font-family:Nunito,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+.card{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:20px;margin-bottom:16px}
+h1,h2,h3{margin:0 0 12px}h1{font-size:26px}h2{font-size:21px}h3{font-size:17px}
+label{display:block;font-weight:800;font-size:14px;margin:12px 0 4px}
+input[type=text],input[type=password],select,textarea{width:100%;border:2px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid #2b6fd6;outline-offset:1px}
+textarea{min-height:260px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.45;tab-size:2}
+.btn{border:0;background:var(--green);color:#fff;font-weight:800;border-radius:999px;padding:10px 22px;cursor:pointer}
+.btn.alt{background:var(--g2);color:var(--text)}.btn.del{background:transparent;color:var(--red);border:2px solid var(--red)}
+.btn:disabled{opacity:.6;cursor:wait}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:0 0 auto}.grow{flex:1 1 200px!important}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}.top h1{margin:0 auto 0 0}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tabs button{border:0;border-radius:999px;padding:10px 20px;font-weight:800;background:var(--card);cursor:pointer;box-shadow:var(--sh)}
+.tabs button.on{background:var(--green);color:#fff}
+.item{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}.item img,.ph{width:84px;height:56px;border-radius:10px;object-fit:cover;flex:none;display:flex;align-items:center;justify-content:center;font-size:28px}
+.item .t{flex:1;min-width:0}.item .t b{display:block}.item .t small{color:var(--muted)}
+.tag{font-size:12px;font-weight:800;background:var(--g2);border-radius:999px;padding:2px 10px;margin-left:6px}
+.pv{max-width:260px;max-height:120px;border-radius:12px;display:block;margin-top:8px;border:1px solid var(--line)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}@media(max-width:700px){.two{grid-template-columns:1fr}}
+iframe{width:100%;height:420px;border:2px solid var(--line);border-radius:14px;background:#fff;margin-top:10px}
+.hint{color:var(--muted);font-size:13px;margin:4px 0 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 20px;border-radius:999px;z-index:50}
+.toast.err{background:#b02a1c}
+.login{max-width:400px;margin:12vh auto}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="loginView" class="card login" hidden>
+  <h1>Đăng nhập quản trị</h1>
+  <form id="loginForm">
+    <label for="u">Tên đăng nhập</label><input id="u" type="text" autocomplete="username" required>
+    <label for="p">Mật khẩu</label><input id="p" type="password" autocomplete="current-password" required>
+    <p id="loginErr" class="hint" style="color:var(--red)" role="alert"></p>
+    <p><button class="btn" type="submit">Đăng nhập</button> <a href="/" class="hint">← Về trang chủ</a></p>
+  </form>
+</div>
+
+<div id="appView" hidden>
+  <div class="top"><h1>Quản trị Lớp Học Vui Nhộn</h1>
+    <a class="btn alt" href="/" target="_blank" rel="noopener" style="text-decoration:none">Xem website</a>
+    <button class="btn alt" id="logout">Đăng xuất</button></div>
+  <div class="tabs" role="tablist">
+    <button data-t="games" class="on">🎮 Trò chơi</button><button data-t="site">🎨 Giao diện</button><button data-t="acct">🔐 Tài khoản</button>
+  </div>
+
+  <section id="t-games">
+    <div class="card" id="listCard">
+      <div class="row"><h2 class="grow" style="margin:0">Trò chơi của bạn</h2><button class="btn" id="addBtn">+ Thêm trò chơi</button></div>
+      <p class="hint">Trò chơi tạo ở đây hiện cho mọi người ngay sau khi lưu. Dùng cùng mã (id) với trò chơi có sẵn để thay thế nó.</p>
+      <div id="list"></div>
+    </div>
+    <div class="card" id="editCard" hidden>
+      <h2 id="editTitle">Thêm trò chơi</h2>
+      <div class="two">
+        <div><label for="gTitle">Tên trò chơi</label><input id="gTitle" type="text" maxlength="80"></div>
+        <div><label for="gId">Mã (id) · chữ thường, không dấu</label><input id="gId" type="text" maxlength="40" placeholder="vi-du-tro-choi"></div>
+      </div>
+      <label for="gDesc">Mô tả ngắn</label><input id="gDesc" type="text" maxlength="160">
+      <div class="two">
+        <div><label for="gCat">Nhóm</label><select id="gCat"><option>Gọi tên</option><option>Ôn tập</option><option>Vận động</option><option>Khác</option></select></div>
+        <div><label for="gPreset">Thay thế trò chơi “sắp ra mắt”</label><select id="gPreset"><option value="">— Không —</option></select></div>
+      </div>
+      <div class="two">
+        <div><label>Ảnh bìa thẻ trò chơi</label><input type="file" id="gThumbF" accept="image/*"><img class="pv" id="gThumbPv" alt="" hidden>
+          <button class="btn alt" id="gThumbX" type="button" hidden style="margin-top:6px">Bỏ ảnh</button>
+          <p class="hint">Không có ảnh: dùng biểu tượng và hai màu bên dưới.</p></div>
+        <div><label>Hình nền khi chơi</label><input type="file" id="gBgF" accept="image/*"><img class="pv" id="gBgPv" alt="" hidden>
+          <div class="row" style="margin-top:6px"><input type="color" id="gBgC" value="#e8f6ff" aria-label="Màu nền"><button class="btn alt" id="gBgX" type="button">Bỏ nền</button></div></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label style="margin:0">Biểu tượng <input id="gIcon" type="text" maxlength="4" style="width:70px;text-align:center"></label>
+        <label style="margin:0">Màu 1 <input type="color" id="gC1" value="#35c4b0"></label>
+        <label style="margin:0">Màu 2 <input type="color" id="gC2" value="#2a9df4"></label>
+        <label style="margin:0"><input type="checkbox" id="gHidden"> Ẩn khỏi website</label>
+      </div>
+      <label for="gMode">Kiểu code</label>
+      <select id="gMode"><option value="html">HTML / CSS / JS trọn gói (dán cả trang)</option><option value="fn">Chỉ JavaScript: viết thân hàm play(root, api)</option></select>
+      <label for="gCode">Code trò chơi</label>
+      <textarea id="gCode" spellcheck="false" placeholder="Dán code trò chơi tại đây"></textarea>
+      <p class="hint">Code chạy trong khung cách ly, không đọc được dữ liệu website. Có sẵn <code>LHVN.students</code>, <code>LHVN.pick(arr)</code>, <code>LHVN.toast(text)</code> (kiểu JS: dùng <code>root</code> và <code>api</code>, api = LHVN).</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="saveGame">Lưu trò chơi</button><button class="btn alt" id="runBtn">▶ Chạy thử</button>
+        <button class="btn alt" id="cancelBtn">Hủy</button><button class="btn del" id="delGame" hidden>Xóa</button></div>
+      <iframe id="pv" title="Chạy thử" sandbox="allow-scripts allow-modals allow-forms allow-pointer-lock" hidden></iframe>
+    </div>
+  </section>
+
+  <section id="t-site" hidden><div class="card">
+    <h2>Giao diện website</h2>
+    <label for="sTitle">Tên trang (hiện trên tab trình duyệt)</label><input id="sTitle" type="text" maxlength="80">
+    <label for="sColor">Màu chủ đạo (nút, thẻ đang chọn)</label><input id="sColor" type="color" value="#1f8a1f">
+    <label>Logo</label><input type="file" id="sLogoF" accept="image/*"><img class="pv" id="sLogoPv" alt="" hidden>
+    <label>Ảnh banner trang chủ</label><input type="file" id="sHeroF" accept="image/*"><img class="pv" id="sHeroPv" alt="" hidden>
+    <p class="hint">Để trống ảnh nào thì website dùng ảnh gốc.</p>
+    <p class="row"><button class="btn" id="saveSite">Lưu giao diện</button><button class="btn alt" id="resetSite">Về mặc định</button></p>
+  </div></section>
+
+  <section id="t-acct" hidden><div class="card" style="max-width:480px">
+    <h2>Đổi tài khoản</h2>
+    <label for="aUser">Tên đăng nhập</label><input id="aUser" type="text" autocomplete="username">
+    <label for="aCur">Mật khẩu hiện tại</label><input id="aCur" type="password" autocomplete="current-password">
+    <label for="aNew">Mật khẩu mới (tối thiểu 8 ký tự)</label><input id="aNew" type="password" autocomplete="new-password">
+    <p class="hint">Sau khi đổi, mọi phiên đăng nhập cũ bị đăng xuất.</p>
+    <p><button class="btn" id="savePw">Lưu thay đổi</button></p>
+  </div></section>
+</div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const BUILTIN=[['goi-ten','Gọi tên ngẫu nhiên','Chọn ngẫu nhiên 1 học sinh','Gọi tên','👥'],['sut-bong','Sút bóng gọi tên','Đá bóng – chọn học sinh','Vận động','⚽'],['vong-quay','Vòng quay may mắn','Quay để chọn học sinh / phần thưởng','Gọi tên','🎡'],['hop-bi-mat','Hộp bí mật','Chọn và trả lời câu hỏi bất ngờ','Ôn tập','🧰'],['co-caro','Cờ caro kiến thức','Trả lời đúng để giành ô','Ôn tập','❌⭕'],['trieu-phu','Ai là triệu phú','Thử thách kiến thức','Ôn tập','🏆'],['rung-chuong','Rung chuông vàng','Trả lời nhanh – giành chiến thắng','Ôn tập','🔔'],['o-chu','Ô chữ bí ẩn','Giải ô chữ theo gợi ý','Ôn tập','🔤'],['ban-phi-tieu','Bắn phi tiêu','Bắn phi tiêu chọn câu hỏi','Vận động','🎯'],['ghep-cap','Ghép cặp nhanh','Nối cặp kiến thức phù hợp','Khác','🧩']];
+let games=[], settings={}, cur=null, draft={};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t,err){const e=$('#toast');e.textContent=t;e.className='toast'+(err?' err':'');e.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>e.hidden=true,2800)}
+async function api(path,method='GET',body){
+  const r=await fetch('/api/'+path,{method,headers:body?{'content-type':'application/json'}:{},body:body?JSON.stringify(body):undefined,credentials:'same-origin'});
+  const d=await r.json().catch(()=>({}));
+  if(r.status===401&&path!=='login'){show(false);throw new Error('Phiên đăng nhập đã hết hạn.')}
+  if(!r.ok) throw new Error(d.error||'Có lỗi xảy ra.');
+  return d;
+}
+function show(on){$('#loginView').hidden=on;$('#appView').hidden=!on}
+async function busy(btn,fn){btn.disabled=true;try{await fn()}catch(e){toast(e.message,1)}finally{btn.disabled=false}}
+
+// --- Ảnh: thu nhỏ trước khi tải lên ---
+function shrink(file,max){return new Promise((ok,no)=>{const im=new Image(),u=URL.createObjectURL(file);
+  im.onload=()=>{const k=Math.min(1,max/im.width),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL('image/jpeg',.85))};
+  im.onerror=()=>no(new Error('Không đọc được ảnh.'));im.src=u})}
+async function upload(file,max){const d=await shrink(file,max);return (await api('img','POST',{data:d})).url}
+function bindImg(input,max,onDone){input.onchange=async()=>{const f=input.files[0];if(!f)return;
+  try{toast('Đang tải ảnh...');onDone(await upload(f,max));toast('Đã tải ảnh')}catch(e){toast(e.message,1)}input.value=''}}
+function pv(id,url){const i=$(id);i.hidden=!url;if(url)i.src=url}
+
+// --- Đăng nhập ---
+$('#loginForm').onsubmit=async e=>{e.preventDefault();$('#loginErr').textContent='';
+  try{await api('login','POST',{username:$('#u').value,password:$('#p').value});$('#p').value='';await load()}
+  catch(err){$('#loginErr').textContent=err.message}};
+$('#logout').onclick=async()=>{await api('logout','POST').catch(()=>{});show(false)};
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  ['games','site','acct'].forEach(t=>$('#t-'+t).hidden=t!==b.dataset.t)});
+
+async function load(){
+  const d=await fetch('/api/public').then(r=>r.json());games=d.games||[];settings=d.settings||{};
+  show(true);renderList();fillSite();
+}
+function thumbOf(g){return g.thumb?`<img src="${esc(g.thumb)}" alt="">`:`<div class="ph" style="background:linear-gradient(135deg,${g.colors[0]},${g.colors[1]})">${esc(g.icon)}</div>`}
+function renderList(){
+  $('#list').innerHTML=games.length?games.map((g,i)=>`<div class="item">${thumbOf(g)}<div class="t"><b>${esc(g.title)}${g.hidden?'<span class="tag">Đang ẩn</span>':''}</b><small>${esc(g.cat)} · ${esc(g.id)}${g.code?'':' · chưa có code'}</small></div><button class="btn alt" data-e="${i}">Sửa</button></div>`).join(''):'<p class="hint">Chưa có trò chơi nào. Bấm “Thêm trò chơi” để bắt đầu.</p>';
+  $('#list').querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>edit(+b.dataset.e));
+}
+$('#gPreset').innerHTML+=BUILTIN.map(b=>`<option value="${b[0]}">${esc(b[1])}</option>`).join('');
+$('#gPreset').onchange=e=>{const b=BUILTIN.find(x=>x[0]===e.target.value);if(!b)return;
+  $('#gId').value=b[0];$('#gTitle').value=b[1];$('#gDesc').value=b[2];$('#gCat').value=b[3];$('#gIcon').value=b[4]};
+$('#addBtn').onclick=()=>edit(-1);
+function edit(i){
+  cur=i;draft=i<0?{thumb:'',bg:''}:{...games[i]};const g=i<0?{colors:['#35c4b0','#2a9df4'],mode:'html',cat:'Ôn tập',icon:'🎮'}:games[i];
+  $('#editTitle').textContent=i<0?'Thêm trò chơi':'Sửa: '+g.title;
+  $('#gTitle').value=g.title||'';$('#gId').value=g.id||'';$('#gId').readOnly=i>=0;$('#gDesc').value=g.desc||'';$('#gCat').value=g.cat;$('#gPreset').value='';$('#gPreset').disabled=i>=0;
+  $('#gIcon').value=g.icon||'🎮';$('#gC1').value=g.colors[0];$('#gC2').value=g.colors[1];$('#gHidden').checked=!!g.hidden;
+  $('#gMode').value=g.mode||'html';$('#gCode').value=g.code||'';$('#delGame').hidden=i<0;$('#pv').hidden=true;
+  setThumb(draft.thumb||'');setBg(draft.bg||'');
+  $('#listCard').hidden=true;$('#editCard').hidden=false;scrollTo(0,0);
+}
+function setThumb(u){draft.thumb=u;pv('#gThumbPv',u);$('#gThumbX').hidden=!u}
+function setBg(u){draft.bg=u;const img=u.startsWith('/');pv('#gBgPv',img?u:'');if(!img&&u)$('#gBgC').value=u}
+bindImg($('#gThumbF'),640,setThumb);bindImg($('#gBgF'),1600,setBg);
+$('#gThumbX').onclick=()=>setThumb('');$('#gBgX').onclick=()=>setBg('');$('#gBgC').oninput=e=>setBg(e.target.value);
+$('#cancelBtn').onclick=()=>{$('#editCard').hidden=true;$('#listCard').hidden=false};
+function collect(){return {id:$('#gId').value.trim().toLowerCase(),title:$('#gTitle').value.trim(),desc:$('#gDesc').value.trim(),cat:$('#gCat').value,icon:$('#gIcon').value.trim(),
+  colors:[$('#gC1').value,$('#gC2').value],thumb:draft.thumb||'',bg:draft.bg||'',mode:$('#gMode').value,code:$('#gCode').value,hidden:$('#gHidden').checked}}
+async function saveGames(list){const d=await api('admin/games','PUT',list);games=d.games;renderList()}
+$('#saveGame').onclick=e=>busy(e.target,async()=>{const g=collect();
+  if(!g.title)throw new Error('Hãy nhập tên trò chơi.');if(!g.id)throw new Error('Hãy nhập mã (id) cho trò chơi.');
+  if(cur<0&&games.some(x=>x.id===g.id))throw new Error('Mã này đã tồn tại. Hãy chọn mã khác.');
+  const list=games.slice();cur<0?list.push(g):list[cur]=g;await saveGames(list);toast('Đã lưu trò chơi');$('#cancelBtn').click()});
+$('#delGame').onclick=e=>{if(!confirm('Xóa trò chơi này? Không thể hoàn tác.'))return;
+  busy(e.target,async()=>{await saveGames(games.filter((_,i)=>i!==cur));toast('Đã xóa');$('#cancelBtn').click()})};
+$('#runBtn').onclick=()=>{const g=collect(),f=$('#pv');
+  const boot='<script>window.LHVN={students:["An","Bình","Chi","Dũng"],pick:a=>a[Math.floor(Math.random()*a.length)],toast:t=>alert(t)};<\/script>';
+  const base='<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;font-family:Nunito,system-ui,sans-serif}</style>';
+  f.srcdoc=g.mode==='fn'?'<!doctype html><html><head>'+base+boot+'</head><body><div id="root" style="text-align:center"></div><script>(function(root,api){'+g.code+'\n})(document.getElementById("root"),window.LHVN)<\/script></body></html>'
+    :(/<head[^>]*>/i.test(g.code)?g.code.replace(/<head[^>]*>/i,m=>m+boot):'<!doctype html><html><head>'+base+boot+'</head><body>'+g.code+'</body></html>');
+  f.hidden=false;f.scrollIntoView({behavior:'smooth',block:'center'})};
+
+// --- Giao diện ---
+let site={};
+function fillSite(){site={...settings};$('#sTitle').value=site.title||'';$('#sColor').value=site.color||'#1f8a1f';pv('#sLogoPv',site.logo);pv('#sHeroPv',site.hero)}
+bindImg($('#sLogoF'),480,u=>{site.logo=u;pv('#sLogoPv',u)});bindImg($('#sHeroF'),1672,u=>{site.hero=u;pv('#sHeroPv',u)});
+$('#saveSite').onclick=e=>busy(e.target,async()=>{const d=await api('admin/settings','PUT',{...site,title:$('#sTitle').value,color:$('#sColor').value});settings=d.settings;toast('Đã lưu giao diện')});
+$('#resetSite').onclick=e=>{if(!confirm('Đưa giao diện về mặc định?'))return;busy(e.target,async()=>{await api('admin/settings','PUT',{});settings={};fillSite();toast('Đã về mặc định')})};
+
+// --- Tài khoản ---
+$('#savePw').onclick=e=>busy(e.target,async()=>{await api('admin/password','POST',{username:$('#aUser').value,current:$('#aCur').value,next:$('#aNew').value});
+  $('#aCur').value=$('#aNew').value='';toast('Đã đổi. Hãy đăng nhập lại.');show(false)});
+
+api('me').then(load).catch(()=>show(false));
+</script>
+</body>
+</html>
